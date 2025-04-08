@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Host extends Model
+class Range extends Model
 {
-    protected $fillable = [ 'ip', 'domain'];
+    //
 }
