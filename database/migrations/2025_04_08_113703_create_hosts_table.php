@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('ip');
             $table->string('domain');
-            $table->foreignIdFor(Range::class)->constrained()->cascadeOnDelete();
+            $table->foreignIdFor(Range::class)->constrained()->cascadeOnDelete(); //range_id
             $table->timestamps();
         });
 

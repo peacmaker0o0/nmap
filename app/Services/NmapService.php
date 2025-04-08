@@ -1,8 +1,8 @@
 <?php
-
 namespace App\Services;
 
 use App\Models\Host;
+use App\Models\Range;
 
 /**
  * Class NmapService.
@@ -18,7 +18,7 @@ class NmapService
     }
 
     // Scan hosts and optionally store them
-    public function scanHosts(bool $store = false): array
+    public function scanHosts(Range $range, bool $store = false): array
     {
         $hosts = [];
         $command = "nmap -sn {$this->ip}";
@@ -36,10 +36,11 @@ class NmapService
                 $hosts[] = ['ip' => $ip, 'domain' => $domain];
 
                 if ($store) {
-                    // Check if the host already exists, if not, create it
+                    // Check if the host already exists, if not, create it and associate with the provided Range
                     Host::firstOrCreate([
                         'ip' => $ip,
                         'domain' => $domain,
+                        'range_id' => $range->id, // Associate the host with the given range
                     ]);
                 }
             }
