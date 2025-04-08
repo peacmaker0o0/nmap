@@ -13,4 +13,6 @@ class Range extends Model
     {
         return $this->hasMany(Host::class);
     }
+
+    
 }

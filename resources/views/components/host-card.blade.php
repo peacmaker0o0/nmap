@@ -1,0 +1,5 @@
+
+
+<div>
+   {{ $range->name }}
+</div>
