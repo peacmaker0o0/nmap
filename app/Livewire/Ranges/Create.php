@@ -26,7 +26,7 @@ class Create extends Component
             'cidr' => $this->cidr
         ]);
 
-        return redirect(route('ranges.index'))->with('success','Range Created Successfully');
+        return redirect(route('ranges.all'))->with('success','Range Created Successfully');
     }
 
     public function render()

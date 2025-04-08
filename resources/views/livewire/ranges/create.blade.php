@@ -7,7 +7,7 @@
 
         <flux:input wire:model="name" label="Name" required/>
         <flux:input wire:model="ip" label="IP" required />
-        <flux:input wire:model="cidr" label="CIDR" />
+        <flux:input wire:model.live="cidr" label="CIDR" />
         <flux:button type="submit" class="mt-4" variant="primary">Add</flux:button>
     </form>
 

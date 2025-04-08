@@ -1,51 +1,71 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\Host;
 use App\Models\Range;
 
 /**
- * Class NmapService.
+ * Class NmapService
  */
 class NmapService
 {
-    public string $ip;
+    protected Range $range;
 
-    // Constructor
-    public function __construct(string $ip)
+    public function __construct(Range $range)
     {
-        $this->ip = $ip;
+        $this->range = $range;
     }
 
-    // Scan hosts and optionally store them
-    public function scanHosts(Range $range, bool $store = false): array
+    /**
+     * Scan hosts in the given range and optionally store them.
+     */
+    public function scanHosts(bool $store = false): array
     {
         $hosts = [];
-        $command = "nmap -sn {$this->ip}";
-        
-        exec($command, $output);  // Get the raw output from the command
-        
-        // Loop through the output and extract relevant data
+
+        // Handle case: if CIDR is null, just use the IP
+        $target = $this->range->cidr
+            ? "{$this->range->ip}/{$this->range->cidr}"
+            : $this->range->ip;
+
+        $command = "nmap -sn {$target}";
+        exec($command, $output);
+
         foreach ($output as $line) {
-            // Match IP addresses and hostnames using regex patterns
+            $ip = null;
+            $domain = null;
+
+            // Try matching with hostname + IP
             if (preg_match('/Nmap scan report for (.+?) \(([\d\.]+)\)/', $line, $matches)) {
-                $domain = $matches[1];  // Hostname
-                $ip = $matches[2];  // IP address
-                
-                // Store the host in the result array
+                $domain = $matches[1];
+                $ip = $matches[2];
+            }
+            // Try matching just an IP
+            elseif (preg_match('/Nmap scan report for ([\d\.]+)/', $line, $matches)) {
+                $ip = $matches[1];
+                $domain = null;
+            }
+
+            if ($ip) {
                 $hosts[] = ['ip' => $ip, 'domain' => $domain];
 
                 if ($store) {
-                    // Check if the host already exists, if not, create it and associate with the provided Range
                     Host::firstOrCreate([
                         'ip' => $ip,
                         'domain' => $domain,
-                        'range_id' => $range->id, // Associate the host with the given range
+                        'range_id' => $this->range->id,
                     ]);
                 }
             }
         }
 
         return $hosts;
+    }
+
+
+    public function scanServices()
+    {
+        return null;
     }
 }
