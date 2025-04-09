@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('port');
             $table->string('protocol');
             $table->foreignIdFor(Host::class);
+            $table->enum('status', ['up', 'down'])->default('down');  // Track service status
             $table->timestamps();
         });
 
@@ -30,6 +31,5 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('services');
-        Schema::dropIfExists('host_service');
     }
 };

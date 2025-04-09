@@ -1,0 +1,50 @@
+Starting Nmap 7.95 ( https://nmap.org ) at 2025-04-09 15:15 Arab Standard Time
+Nmap scan report for adsl-172-10-1-2.dsl.sndg02.sbcglobal.net (172.10.1.2)
+Host is up (0.0036s latency).
+Not shown: 975 closed tcp ports (reset)
+PORT      STATE    SERVICE       VERSION
+25/tcp    open     smtp          Microsoft Exchange smtpd
+80/tcp    open     http          Microsoft IIS httpd 7.0
+110/tcp   open     pop3          Microsoft Exchange 2007-2010 pop3d
+135/tcp   open     msrpc         Microsoft Windows RPC
+139/tcp   open     netbios-ssn   Microsoft Windows netbios-ssn
+143/tcp   open     imap          Microsoft Exchange 2007-2010 imapd
+443/tcp   open     ssl/http      Microsoft IIS httpd 7.0
+445/tcp   open     microsoft-ds  Microsoft Windows Server 2008 R2 microsoft-ds (workgroup: AHLIA)
+587/tcp   open     smtp          Microsoft Exchange smtpd
+593/tcp   open     ncacn_http    Microsoft Windows RPC over HTTP 1.0
+808/tcp   open     ccproxy-http?
+993/tcp   open     imap          Microsoft Exchange imapd
+995/tcp   open     pop3s?
+1025/tcp  open     msrpc         Microsoft Windows RPC
+1026/tcp  open     msrpc         Microsoft Windows RPC
+1027/tcp  open     msrpc         Microsoft Windows RPC
+1028/tcp  open     msrpc         Microsoft Windows RPC
+1119/tcp  filtered bnetgame
+3389/tcp  open     ms-wbt-server Microsoft Terminal Service
+5357/tcp  open     http          Microsoft HTTPAPI httpd 2.0 (SSDP/UPnP)
+6001/tcp  open     ncacn_http    Microsoft Windows RPC over HTTP 1.0
+6002/tcp  open     ncacn_http    Microsoft Windows RPC over HTTP 1.0
+6003/tcp  open     ncacn_http    Microsoft Windows RPC over HTTP 1.0
+6004/tcp  open     ncacn_http    Microsoft Windows RPC over HTTP 1.0
+10000/tcp open     ndmp          Symantec/Veritas Backup Exec ndmp (NDMPv3)
+1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
+SF-Port995-TCP:V=7.95%I=7%D=4/9%Time=67F664DB%P=i686-pc-windows-windows%r(
+SF:NULL,1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(SSLSessionR
+SF:eq,1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(TLSSessionReq
+SF:,1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(SSLv23SessionRe
+SF:q,1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(RTSPRequest,1F
+SF:,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(DNSVersionBindReqT
+SF:CP,1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(SMBProgNeg,1F
+SF:,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(FourOhFourRequest,
+SF:1F,"-ERR\x20Connection\x20is\x20closed\.\x2013\r\n")%r(oracle-tns,1F,"-
+SF:ERR\x20Connection\x20is\x20closed\.\x2013\r\n");
+Device type: general purpose
+Running: Microsoft Windows 2008|7|Vista|8.1
+OS CPE: cpe:/o:microsoft:windows_server_2008:r2 cpe:/o:microsoft:windows_7 cpe:/o:microsoft:windows_vista cpe:/o:microsoft:windows_8.1
+OS details: Microsoft Windows Server 2008 R2 SP1 or Windows 7 SP1, Microsoft Windows Vista SP2 or Windows 7 or Windows Server 2008 R2 or Windows 8.1
+Network Distance: 2 hops
+Service Info: Hosts: AHLIAMAIL.ahlia.edu.bh, AHLIAMAIL; OS: Windows; CPE: cpe:/o:microsoft:windows, cpe:/o:microsoft:windows_server_2008:r2
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 61.57 seconds

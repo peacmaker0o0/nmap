@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Models\Host;
+use App\Models\Service;
 use App\Models\Range;
 
 /**
@@ -58,9 +59,16 @@ class NmapService
 
     /**
      * Scan hosts in the given range and optionally store them.
+     * 
+     * @param bool $store Whether to store the results
+     * @return array|string Returns array of hosts or an error message string
      */
-    public function scanHosts(bool $store = false): array
+    public function scanHosts(bool $store = false): array|string
     {
+        if ($this->range->ip_count > config('scan.max_hosts')) {
+            return "Scan aborted: {$this->range->ip_count} hosts exceed the max allowed (" . config('scan.max_hosts') . ").";
+        }
+        
         $hosts = [];
 
         // Handle case: if CIDR is null, just use the IP
@@ -74,7 +82,7 @@ class NmapService
         $output = $this->runCommand($command, 60);
 
         if ($output === "Command timed out.") {
-            return [];  // Return an empty array if timeout occurred
+            return "Scan timed out. Please try again later.";
         }
 
         foreach (explode("\n", $output) as $line) {
@@ -107,8 +115,77 @@ class NmapService
         return $hosts;
     }
 
-    public function scanServices()
+    /**
+     * Scan services for a given host.
+     */
+    public function scanServices(Host $host): bool|string
     {
-        return null;
+        $command = "nmap -sS -sV -O -T3 {$host->ip}";
+        
+        // Use the runCommand function with a longer timeout
+        $output = $this->runCommand($command, 300);
+
+        info($output);
+
+        if ($output === "Command timed out.") {
+            return "Service scan timed out. Please try again later.";
+        }
+
+        $services = $this->parseNmapOutputForServices($output, $host);
+
+        foreach ($services as $serviceData) {
+            info($serviceData);
+            Service::updateOrCreate(
+                ['host_id' => $host->id, 'port' => $serviceData['port'], 'protocol' => $serviceData['protocol']],
+                ['name' => $serviceData['name'], 'version' => $serviceData['version'], 'status' => $serviceData['status']]
+            );
+        }
+
+        return true;
+    }
+
+    /**
+     * Parse Nmap output and extract services information.
+     */
+    public function parseNmapOutputForServices(string $output, Host $host): array
+    {
+        $services = [];
+    
+        $lines = explode("\n", $output);
+        foreach ($lines as $line) {
+            // Parse service details from the Nmap output
+            // Modify the regex to account for possible variations in spacing or format
+            if (preg_match('/^(\d+)\/tcp\s+(open|closed)\s+(\S+)\s+(.+)?/', $line, $matches)) {
+                // Extract service details from the regex match
+                $port = $matches[1];
+                $state = $matches[2];
+                $name = $matches[3];
+                $version = isset($matches[4]) ? $matches[4] : null;
+    
+                // Only store services that are open
+                if ($state === 'open') {
+                    $services[] = [
+                        'host_id' => $host->id,
+                        'port' => $port,
+                        'protocol' => 'tcp',
+                        'name' => $name,
+                        'version' => $version,
+                        'status' => 'up',  // Mark as "up" since the state is "open"
+                    ];
+                } elseif ($state === 'closed') {
+                    // Optionally, store closed services as "down"
+                    $services[] = [
+                        'host_id' => $host->id,
+                        'port' => $port,
+                        'protocol' => 'tcp',
+                        'name' => $name,
+                        'version' => $version,
+                        'status' => 'down',  // Mark as "down" for closed services
+                    ];
+                }
+            }
+        }
+    
+        return $services;
     }
 }
