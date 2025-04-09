@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('hosts', function (Blueprint $table) {
             $table->id();
             $table->string('ip');
-            $table->string('domain');
+            $table->string('domain')->nullable();
             $table->foreignIdFor(Range::class)->constrained()->cascadeOnDelete(); //range_id
             $table->timestamps();
         });

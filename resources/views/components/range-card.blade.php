@@ -1,6 +1,6 @@
 @props(['range'])
 
-<div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition max-w-xs w-full mx-auto">
+<div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition">
     <div>
         <h2 class="text-lg font-semibold text-gray-800">{{ $range->name }}</h2>
         
@@ -16,11 +16,13 @@
         </dl>
     </div>
 
-    <div class="mt-6 text-right">
-        <a href="{{ route('ranges.show', $range) }}">
-            <button class="bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                Show
-            </button>
+    <div class="flex justify-end gap-2">
+        <a wire:navigate href="{{ route('ranges.show', $range) }}">
+            <flux:icon.viewfinder-circle/>
+        </a>
+
+        <a  wire:navigate href="{{ route('ranges.edit', $range) }}" class="cursor-pointer">
+            <flux:icon.pencil-square/>
         </a>
     </div>
 </div>
