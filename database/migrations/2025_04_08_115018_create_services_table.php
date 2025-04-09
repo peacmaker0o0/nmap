@@ -18,18 +18,8 @@ return new class extends Migration
             $table->string('name');
             $table->string('port');
             $table->string('protocol');
+            $table->foreignIdFor(Host::class);
             $table->timestamps();
-        });
-
-        Schema::create('host_service', callback: function (Blueprint $table) {
-            $table->id();
-            $table->foreignIdFor(Host::class); //host_id
-            $table->foreignIdFor(Service::class); //service_id
-            $table->string('state');
-            $table->timestamps();
-            
-
-
         });
 
     }
