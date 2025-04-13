@@ -18,8 +18,9 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('port')->nullable();
             $table->string('protocol')->nullable();
+            $table->string('version')->nullable();
             $table->foreignIdFor(Host::class);
-            $table->enum('status', ['up', 'down'])->default('down');  // Track service status
+            $table->enum('status', ['up', 'down']);  // Track service status
             $table->timestamps();
         });
 

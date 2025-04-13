@@ -161,9 +161,14 @@ class NmapService
                 'status'   => $serviceData['status'],
             ]);
 
-            Service::create(
-                ['host_id' => $host->id, 'port' => $serviceData['port'], 'protocol' => $serviceData['protocol']]
-            );
+            $service = Service::create([
+                'host_id' => $host->id,
+                'port'    => $serviceData['port'],
+                'protocol'=> $serviceData['protocol'],
+                'name'    => $serviceData['name'], // Ensure this is passed if it's available
+                'status'  => $serviceData['status'],
+                'version' => trim($serviceData['version']),
+            ]);
         }
 
         return true;
@@ -180,7 +185,7 @@ class NmapService
         foreach ($lines as $line) {
             // Parse service details from the Nmap output
             // Modify the regex to account for possible variations in spacing or format
-            if (preg_match('/^(\d+)\/tcp\s+(open|closed)\s+(\S+)\s+(.+)?/', $line, $matches)) {
+            if (preg_match('/^(\d+)\/tcp\s+(open|closed)\s+(\S+)(\s+.+)?$/', $line, $matches)) {
                 // Extract service details from the regex match
                 $port = $matches[1];
                 $state = $matches[2];
