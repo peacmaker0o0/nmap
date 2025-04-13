@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Host;
+use App\Services\NmapService;
 use Illuminate\Console\Command;
 
 class ScanServicesForHostCommand extends Command
@@ -11,7 +13,7 @@ class ScanServicesForHostCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'services:scan {host_id}';
+    protected $signature = 'scan:services {host_id}';
 
     /**
      * The console command description.
@@ -26,7 +28,25 @@ class ScanServicesForHostCommand extends Command
     public function handle()
 
     {
-        $host_id = $this->argument('name');
+        $host_id = $this->argument('host_id');
+        
+        $host = Host::where('id', $host_id)->first();
+
+
+        if (!$host) {
+            $this->error('Host not found');
+            return;
+        }
+
+        $range = $host->range;
+        info("Scanning host {$host->ip}");
+        $nmap = new NmapService($range);
+        if($nmap->scanServices($host))
+        {
+            $this->info('Services scanned');
+        }
+
+
         
     }
 }

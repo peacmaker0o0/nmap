@@ -3,6 +3,7 @@ namespace App\Livewire\Hosts;
 
 use App\Models\Host;
 use App\Models\Service;
+use Illuminate\Support\Facades\Artisan;
 use Livewire\Component;
 use App\Services\NmapService;
 
@@ -21,17 +22,20 @@ class Show extends Component
     // Method to scan the services for the host
     public function scanServices()
     {
-        $nmapService = new NmapService($this->host->range);
-
-        // Scan services and update the services list
-        $nmapService->scanServices($this->host);
-
-        // Get the updated services for the host
-        $this->services = Service::where('host_id', $this->host->id)->get();
-        $this->scanSuccess = true;
-
-        // Refresh the view
-        $this->dispatch('servicesScanned');
+        // Assuming you want to pass a specific host_id (e.g., 1)
+        $hostId = 1; // You can dynamically get this value based on your requirements
+    
+        // Execute the Laravel command 'scan:services' programmatically
+        $exitCode = Artisan::call('scan:services', [
+            'host_id' => $hostId
+        ]);
+    
+        // Check if needed, you can log or return the exit code
+        if ($exitCode === 0) {
+            return "Scan completed successfully.";
+        } else {
+            return "An error occurred during the scan.";
+        }
     }
 
     // Method to load the services when the page is loaded

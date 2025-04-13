@@ -21,41 +21,16 @@ class NmapService
      * Run a command with a timeout in seconds.
      * Default timeout is 60 seconds.
      */
-    public function runCommand(string $command, int $timeout = 60): string
+    public function runCommand(string $command): string
     {
-        // Execute the command with a timeout
-        $descriptors = [
-            0 => ["pipe", "r"],  // stdin
-            1 => ["pipe", "w"],  // stdout
-            2 => ["pipe", "w"],  // stderr
-        ];
-
-        $process = proc_open($command, $descriptors, $pipes);
-        if (is_resource($process)) {
-            // Set a timer for the timeout duration
-            $startTime = time();
-            $output = '';
-            while (true) {
-                $output .= fgets($pipes[1]);
-                if ((time() - $startTime) >= $timeout) {
-                    // Timeout exceeded
-                    proc_terminate($process);
-                    return "Command timed out.";
-                }
-                // Check if process is still running and output is being generated
-                if (feof($pipes[1])) {
-                    break;
-                }
-            }
-            fclose($pipes[1]);
-            fclose($pipes[2]);
-            proc_close($process);
-
-            return $output;
-        }
-
-        return "Failed to run command.";
+        $output = [];
+        $returnVar = 0;
+    
+        exec($command . ' 2>&1', $output, $returnVar);
+    
+        return implode("\n", $output);
     }
+    
 
     /**
      * Scan hosts in the given range and optionally store them.
@@ -65,30 +40,72 @@ class NmapService
      */
     public function scanHosts(bool $store = false): array|string
     {
+        // Check if the number of hosts exceeds the max allowed for scanning
         if ($this->range->ip_count > config('scan.max_hosts')) {
-            return "Scan aborted: {$this->range->ip_count} hosts exceed the max allowed (" . config('scan.max_hosts') . ").";
+            // Get top IPs if the host count is too large
+            $ips = $this->range->getTopIPs(); // Get the top IPs (defaults to 20, or you can pass a custom number)
+    
+            $hosts = [];
+            foreach ($ips as $ip) {
+                $command = "nmap -sn {$ip}"; // Scan each IP individually
+                $output = $this->runCommand($command);
+    
+                if ($output === "Command timed out.") {
+                    return "Scan timed out. Please try again later.";
+                }
+    
+                // Process output for the current IP
+                foreach (explode("\n", $output) as $line) {
+                    $domain = null;
+    
+                    // Try matching with hostname + IP
+                    if (preg_match('/Nmap scan report for (.+?) \(([\d\.]+)\)/', $line, $matches)) {
+                        $domain = $matches[1];
+                        $ip = $matches[2];
+                    }
+                    // Try matching just an IP
+                    elseif (preg_match('/Nmap scan report for ([\d\.]+)/', $line, $matches)) {
+                        $ip = $matches[1];
+                        $domain = null;
+                    }
+    
+                    if ($ip) {
+                        $hosts[] = ['ip' => $ip, 'domain' => $domain];
+    
+                        if ($store) {
+                            $this->range->hosts()->firstOrCreate(
+                                ['ip' => $ip],
+                                ['domain' => $domain]
+                            );
+                        }
+                    }
+                }
+            }
+    
+            return $hosts;
         }
-        
+    
+        // If the host count is within limits, run the scan normally
         $hosts = [];
-
         // Handle case: if CIDR is null, just use the IP
         $target = $this->range->cidr
             ? "{$this->range->ip}/{$this->range->cidr}"
             : $this->range->ip;
-
+    
         $command = "nmap -sn {$target}";
-
+        
         // Use the runCommand function with timeout set to 60 seconds
-        $output = $this->runCommand($command, 60);
-
+        $output = $this->runCommand($command);
+    
         if ($output === "Command timed out.") {
             return "Scan timed out. Please try again later.";
         }
-
+    
+        // Process the scan result
         foreach (explode("\n", $output) as $line) {
             $ip = null;
             $domain = null;
-
+    
             // Try matching with hostname + IP
             if (preg_match('/Nmap scan report for (.+?) \(([\d\.]+)\)/', $line, $matches)) {
                 $domain = $matches[1];
@@ -99,10 +116,10 @@ class NmapService
                 $ip = $matches[1];
                 $domain = null;
             }
-
+    
             if ($ip) {
                 $hosts[] = ['ip' => $ip, 'domain' => $domain];
-
+    
                 if ($store) {
                     $this->range->hosts()->firstOrCreate(
                         ['ip' => $ip],
@@ -111,7 +128,7 @@ class NmapService
                 }
             }
         }
-
+    
         return $hosts;
     }
 
@@ -121,23 +138,31 @@ class NmapService
     public function scanServices(Host $host): bool|string
     {
         $command = "nmap -sS -sV -O -T3 {$host->ip}";
+        info("Running Command: $command");
         
         // Use the runCommand function with a longer timeout
-        $output = $this->runCommand($command, 300);
+        $output = $this->runCommand($command);
 
         info($output);
 
-        if ($output === "Command timed out.") {
-            return "Service scan timed out. Please try again later.";
-        }
-
         $services = $this->parseNmapOutputForServices($output, $host);
 
+        info("All services parsed");
+
         foreach ($services as $serviceData) {
-            info($serviceData);
-            Service::updateOrCreate(
-                ['host_id' => $host->id, 'port' => $serviceData['port'], 'protocol' => $serviceData['protocol']],
-                ['name' => $serviceData['name'], 'version' => $serviceData['version'], 'status' => $serviceData['status']]
+            info("In foreach");
+
+            info("Updating or creating service", [
+                'host_id'  => $host->id,
+                'port'     => $serviceData['port'],
+                'protocol' => $serviceData['protocol'],
+                'name'     => $serviceData['name'],
+                'version'  => $serviceData['version'],
+                'status'   => $serviceData['status'],
+            ]);
+
+            Service::create(
+                ['host_id' => $host->id, 'port' => $serviceData['port'], 'protocol' => $serviceData['protocol']]
             );
         }
 

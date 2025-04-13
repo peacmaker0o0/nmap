@@ -15,9 +15,9 @@ return new class extends Migration
     {
         Schema::create('services', callback: function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('port');
-            $table->string('protocol');
+            $table->string('name')->nullable();
+            $table->string('port')->nullable();
+            $table->string('protocol')->nullable();
             $table->foreignIdFor(Host::class);
             $table->enum('status', ['up', 'down'])->default('down');  // Track service status
             $table->timestamps();

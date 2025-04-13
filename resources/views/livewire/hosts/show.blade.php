@@ -14,9 +14,9 @@
         
         <!-- Scan Services Button -->
         <div class="mt-4">
-            <button wire:click="scanServices" class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            <flux:button wire:click="scanServices" variant="primary">
                 Scan Services
-            </button>
+            </flux:button>
         </div>
 
         @if($scanSuccess)
