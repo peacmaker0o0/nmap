@@ -149,6 +149,7 @@ class NmapService
     
         $services = $this->parseNmapOutputForServices($output, $host);
         info("All services parsed");
+        $scan = $host->scanHistory()->create();
     
         foreach ($services as $serviceData) {
             info("Updating or creating service", [
@@ -167,8 +168,11 @@ class NmapService
                 'name'    => $serviceData['name'],
                 'status'  => $serviceData['status'],
                 'version' => trim($serviceData['version']),
+                'scan_history_id'=>$scan->id,
             ]);
         }
+
+        
     
         return true;
     }

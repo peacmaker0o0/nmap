@@ -4,15 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Service extends Model
+class ScanHistory extends Model
 {
     protected $guarded = [];
 
-    public function scan(): BelongsTo
+    public function services(): HasMany
     {
-        return $this->belongsTo(ScanHistory::class);
+        return $this->hasMany(Service::class);
     }
+
     public function host(): BelongsTo
     {
         return $this->belongsTo(Host::class);
