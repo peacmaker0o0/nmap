@@ -23,10 +23,16 @@
         </div>
 
         @if($scanSuccess)
-            <div class="mt-4 text-green-600 font-medium">
-                Services scanned successfully!
+            <div class="mt-4 px-4 py-3 rounded-md bg-green-100 text-green-800 border border-green-200 text-sm">
+                ✅ Services scanned successfully!
             </div>
         @endif
+
+        @if ($scanFail)
+        <div class="mt-4 px-4 py-3 rounded-md bg-red-100 text-red-800 border border-red-200 text-sm">
+            ❌ Scan failed or host seems down. Try using -Pn if it’s blocking pings.
+        </div>
+    @endif
     </div>
 
     <!-- Services Table -->
@@ -40,6 +46,7 @@
                     <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Name</th>
                     <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Version</th>
                     <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Status</th>
+                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Scan Date</th>
                 </tr>
             </thead>
             <tbody>
@@ -54,6 +61,7 @@
                                 {{ ucfirst($service->status) }}
                             </span>
                         </td>
+                        <td class="px-4 py-2 text-sm">{{ $service->created_at }}</td>
                     </tr>
                 @empty
                     <tr>

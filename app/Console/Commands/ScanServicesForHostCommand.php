@@ -45,6 +45,10 @@ class ScanServicesForHostCommand extends Command
         {
             $this->info('Services scanned');
         }
+        else
+        {
+            $this->info('Host seems down');
+        }
 
 
         

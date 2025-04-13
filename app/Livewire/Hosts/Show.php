@@ -12,30 +12,34 @@ class Show extends Component
     public Host $host;
     public $services = [];
     public $scanSuccess = false;
+    public $scanFail = false;
 
-    // Mount method: assign host only
     public function mount(Host $host)
     {
         $this->host = $host;
     }
 
-    // Scan services using Laravel Artisan command
     public function scanServices()
     {
-        $exitCode = Artisan::call('scan:services', [
+        $output = Artisan::call('scan:services', [
             'host_id' => $this->host->id
         ]);
-
-        if ($exitCode === 0) {
-            // Refresh the services list after scanning
-            $this->services = Service::where('host_id', $this->host->id)->get();
-            $this->scanSuccess = true;
-        } else {
+    
+        $outputString = Artisan::output();
+    
+        if (str_contains($outputString, 'Host seems down')) {
+            session()->flash('error', 'Host seems down. If it is up, try scanning with -Pn.');
             $this->scanSuccess = false;
+            $this->scanFail = true;
+        } else {
+            $this->scanSuccess = true;
+            $this->scanFail = false;
+            session()->flash('success', 'Services scanned successfully!');
         }
+    
+        $this->services = Service::where('host_id', $this->host->id)->get();
     }
 
-    // Render view and always fetch the latest services
     public function render()
     {
         $this->services = Service::where('host_id', $this->host->id)->get();

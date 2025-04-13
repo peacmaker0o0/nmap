@@ -139,19 +139,18 @@ class NmapService
     {
         $command = "nmap -sS -sV -O -T3 {$host->ip}";
         info("Running Command: $command");
-        
-        // Use the runCommand function with a longer timeout
+    
         $output = $this->runCommand($command);
-
         info($output);
-
+    
+        if (str_contains($output, 'Host seems down')) {
+            return false;
+        }
+    
         $services = $this->parseNmapOutputForServices($output, $host);
-
         info("All services parsed");
-
+    
         foreach ($services as $serviceData) {
-            info("In foreach");
-
             info("Updating or creating service", [
                 'host_id'  => $host->id,
                 'port'     => $serviceData['port'],
@@ -160,17 +159,17 @@ class NmapService
                 'version'  => $serviceData['version'],
                 'status'   => $serviceData['status'],
             ]);
-
-            $service = Service::create([
+    
+            Service::create([
                 'host_id' => $host->id,
                 'port'    => $serviceData['port'],
                 'protocol'=> $serviceData['protocol'],
-                'name'    => $serviceData['name'], // Ensure this is passed if it's available
+                'name'    => $serviceData['name'],
                 'status'  => $serviceData['status'],
                 'version' => trim($serviceData['version']),
             ]);
         }
-
+    
         return true;
     }
 
