@@ -12,6 +12,8 @@ Route::middleware(['auth'])->group(function () {
 
     //hosts
     Volt::route('hosts/{host}','hosts.show')->name('hosts.show');
+    //Route::view('dashboard', 'livewire.dashboard')->name('dashboard');
+    Volt::route('dashboard', 'dashboard')->name('dashboard');
 
 
 });
