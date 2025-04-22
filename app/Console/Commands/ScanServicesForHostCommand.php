@@ -41,7 +41,7 @@ class ScanServicesForHostCommand extends Command
         $range = $host->range;
         info("Scanning host {$host->ip}");
         $nmap = new NmapService($range);
-        if($nmap->scanServices($host))
+        if($nmap->scan2($host))
         {
             $this->info('Services scanned');
         }

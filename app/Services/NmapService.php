@@ -224,14 +224,77 @@ class NmapService
     }
 
 
-
-
-
     public static function scan2(Host $host): void
     {
-        $result_path = tmp()->path($host->id) .'.xml';
-        $command = "nmap -Pn -sS -sV -O -T3 -oX $result_path {$host->ip}";
-        $output = shell_exec($command);
-        dd($output);
+        $resultPath = tmp()->path($host->id) . '.xml';
+        $command = "nmap -Pn -sS -sV -O -T3 -oX $resultPath {$host->ip}";
+        shell_exec($command);
+    
+        // Now parse the XML
+        self::parseXmlResult($resultPath, $host);
     }
+
+
+
+
+
+    public static function parseXmlResult(string $filePath, Host $host): void
+{
+    if (!file_exists($filePath)) {
+        throw new \Exception("Nmap XML output not found at: $filePath");
+    }
+
+    $xml = simplexml_load_file($filePath);
+    if (!$xml) {
+        throw new \Exception("Failed to parse Nmap XML output.");
+    }
+
+    $scan = $host->scanHistory()->create();
+
+    // Map Nmap states to your allowed DB values
+    $statusMap = [
+        'open'   => 'up',
+        'closed' => 'down',
+        'filtered' => 'down',   // Optional mappings
+        'unfiltered' => 'down',
+    ];
+
+    foreach ($xml->host->ports->port as $port) {
+        $portId = (int) $port['portid'];
+        $protocol = (string) $port['protocol'];
+        $state = (string) $port->state['state'];
+
+        $serviceName = (string) $port->service['name'];
+        $serviceVersion = (string) $port->service['version'];
+        $serviceProduct = (string) $port->service['product'];
+
+        // Normalize the status using the mapping
+        $normalizedStatus = $statusMap[$state] ?? 'unknown';
+
+        // Save service
+        Service::create([
+            'host_id'          => $host->id,
+            'scan_history_id'  => $scan->id,
+            'port'             => $portId,
+            'protocol'         => $protocol,
+            'name'             => $serviceName,
+            'version'          => $serviceVersion ?: $serviceProduct, // fallback if version missing
+            'status'           => $normalizedStatus,
+        ]);
+    }
+
+    // Optional: Parse OS info
+    if (isset($xml->host->os)) {
+        $osMatches = $xml->host->os->osmatch;
+        foreach ($osMatches as $os) {
+            $osName = (string) $os['name'];
+            $host->domain = $osName;
+            $host->save();
+            $accuracy = (int) $os['accuracy'];
+            // Save or use OS info as needed
+        }
+    }
+}
+
+
 }

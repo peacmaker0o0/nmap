@@ -21,5 +21,12 @@
             <flux:icon.viewfinder-circle/>
         </a>
 
+        <button class="cursor-pointer" wire:click="deleteHost({{ $host->id }})" >
+            <flux:icon.trash/>
+        </button>
+        
+
+
+
     </div>
 </div>
