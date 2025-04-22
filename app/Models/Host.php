@@ -67,4 +67,12 @@ class Host extends Model
     }
 
 
+
+
+    public function lastScan(): ScanHistory
+    {
+        return $this->scanHistory()->orderBy('created_at','desc')->first();
+    }
+
+
 }
