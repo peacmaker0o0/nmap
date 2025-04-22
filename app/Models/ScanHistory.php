@@ -6,6 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use Mail;
+
+
 class ScanHistory extends Model
 {
     protected $guarded = [];
@@ -23,5 +26,9 @@ class ScanHistory extends Model
     {
         return $this->hasMany(Vulnerability::class);
     }
+
+
+
+
 
 }

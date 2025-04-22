@@ -1,7 +1,9 @@
 <?php
 namespace App\Services;
 
+use App\Events\ScanHistoryCreated;
 use App\Models\Host;
+use App\Models\ScanHistory;
 use App\Models\Service;
 use App\Models\Range;
 use App\Models\Vulnerability;
@@ -251,6 +253,8 @@ class NmapService
 
     $scan = $host->scanHistory()->create();
 
+
+
     // Map Nmap states to your allowed DB values
     $statusMap = [
         'open'   => 'up',
@@ -294,6 +298,9 @@ class NmapService
             // Save or use OS info as needed
         }
     }
+
+
+    event(new ScanHistoryCreated($scan));
 }
 
 
