@@ -7,9 +7,9 @@
         <ul class="space-y-2 text-gray-600">
             <li><strong class="font-semibold">IP Address:</strong> {{ $host->ip }}</li>
             <li><strong class="font-semibold">Domain:</strong> {{ $host->domain }}</li>
-            <li><strong class="font-semibold">Range ID:</strong> {{ $host->range_id }}</li>
-            <li><strong class="font-semibold">Created At:</strong> {{ $host->created_at }}</li>
-            <li><strong class="font-semibold">Updated At:</strong> {{ $host->updated_at }}</li>
+            <li><strong class="font-semibold">Range:</strong> {{ $host->range->name ?? 'N/A' }}</li>
+            <li><strong class="font-semibold">Created At:</strong> {{ $host->created_at->diffForHumans() }}</li>
+            <li><strong class="font-semibold">Updated At:</strong> {{ $host->updated_at->diffForHumans() }}</li>
         </ul>
 
         <!-- Scan Services Button -->
@@ -29,46 +29,54 @@
         @endif
 
         @if ($scanFail)
-        <div class="mt-4 px-4 py-3 rounded-md bg-red-100 text-red-800 border border-red-200 text-sm">
-            ❌ Scan failed or host seems down. Try using -Pn if it’s blocking pings.
-        </div>
-    @endif
+            <div class="mt-4 px-4 py-3 rounded-md bg-red-100 text-red-800 border border-red-200 text-sm">
+                ❌ Scan failed or host seems down. Try using -Pn if it’s blocking pings.
+            </div>
+        @endif
     </div>
 
-    <!-- Services Table -->
+    <!-- Scan History Tables -->
     <div class="bg-white shadow-md rounded-lg p-6">
-        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Services</h2>
+        <h2 class="text-2xl font-semibold text-gray-800 mb-4">Scan History</h2>
 
-        <table class="min-w-full table-auto text-left border-collapse">
-            <thead>
-                <tr>
-                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Port</th>
-                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Name</th>
-                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Version</th>
-                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Status</th>
-                    <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Scan Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse ($services as $service)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2 text-sm">{{ $service->port }}</td>
-                        <td class="px-4 py-2 text-sm">{{ $service->name }}</td>
-                        <td class="px-4 py-2 text-sm">{{ $service->version }}</td>
-                        <td class="px-4 py-2 text-sm">
-                            <span class="text-xs px-2 py-1 rounded-full 
-                                {{ $service->status === 'up' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
-                                {{ ucfirst($service->status) }}
-                            </span>
-                        </td>
-                        <td class="px-4 py-2 text-sm">{{ $service->created_at }}</td>
-                    </tr>
-                @empty
+        <!-- Loop through scan history -->
+        @foreach ($host->scanHistory as $scan)
+            <div class="mb-4">
+                <!-- Collapsible Button -->
+                <button class="w-full text-left px-4 py-2 bg-gray-100 rounded-md focus:outline-none" 
+                wire:click="toggleScanHistory({{ $scan->id }})">
+            <span class="font-semibold">Scan on {{ $scan->created_at->diffForHumans() }}</span>
+        </button>
+        
+        <!-- Collapsible Table -->
+        <div class="{{ $scanHistoryCollapse[$scan->id] ? 'block' : 'hidden' }} mt-4">
+            <table class="min-w-full table-auto text-left border-collapse">
+                <thead>
                     <tr>
-                        <td colspan="4" class="px-4 py-2 text-center text-gray-500">No services found for this host.</td>
+                        <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Port</th>
+                        <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Name</th>
+                        <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Version</th>
+                        <th class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100">Status</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach ($scan->services as $service)
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-2 text-sm">{{ $service->port }}</td>
+                            <td class="px-4 py-2 text-sm">{{ $service->name }}</td>
+                            <td class="px-4 py-2 text-sm">{{ $service->version ?: 'N/A' }}</td>
+                            <td class="px-4 py-2 text-sm">
+                                <span class="text-xs px-2 py-1 rounded-full 
+                                    {{ $service->status === 'up' ? 'bg-green-200 text-green-800' : 'bg-red-200 text-red-800' }}">
+                                    {{ $service->status === 'up' ? 'Open' : ucfirst($service->status) }}
+                                </span>
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+            </div>
+        @endforeach
     </div>
 </div>

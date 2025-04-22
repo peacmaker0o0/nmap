@@ -15,11 +15,23 @@ class Show extends Component
     public $scanSuccess = false;
     public $scanFail = false;
 
+    // Array to store the collapse state of scan histories
+    public $scanHistoryCollapse = [];
+
+    // Initialize the collapse state when the component is mounted
     public function mount(Host $host)
     {
         $this->host = $host;
+        // Initialize the collapse state for each scan history (set to false by default)
+        $this->scanHistoryCollapse = $this->host->scanHistory->pluck('id', 'id')->mapWithKeys(fn($id) => [$id => false])->toArray();
+    }
+    // Toggle the collapse state for a specific scan history
+    public function toggleScanHistory($scanId)
+    {
+        $this->scanHistoryCollapse[$scanId] = !($this->scanHistoryCollapse[$scanId] ?? false);
     }
 
+    // Scan services for the host
     public function scanServices()
     {
         $output = Artisan::call('scan:services', [
@@ -30,26 +42,25 @@ class Show extends Component
 
         info($output);
     
-        // if (str_contains($outputString, 'Host seems down')) {
-        //     session()->flash('error', 'Host seems down. If it is up, try scanning with -Pn.');
-        //     $this->scanSuccess = false;
-        //     $this->scanFail = true;
-        // } else {
-        //     $this->scanSuccess = true;
-        //     $this->scanFail = false;
-        //     session()->flash('success', 'Services scanned successfully!');
-        // }
-    
+        // Simulate a successful scan for now
         $this->scanSuccess = true;
         $this->scanFail = false;
         $this->services = Service::where('host_id', $this->host->id)->get();
         $this->dispatch('services-scanned');
+        $this->refreshScanHistoryCollapse();
     }
 
 
-   #[On('services-scanned')]
+    private function refreshScanHistoryCollapse()
+    {
+        // Reinitialize the collapse state for all scan histories
+        $this->scanHistoryCollapse = $this->host->scanHistory->pluck('id', 'id')->mapWithKeys(fn($id) => [$id => false])->toArray();
+    }
+
+    #[On('services-scanned')]
     public function render()
     {
+        // Refresh the list of services after scanning
         $this->services = Service::where('host_id', $this->host->id)->get();
         return view('livewire.hosts.show');
     }
