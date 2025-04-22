@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\Host;
 use App\Models\Service;
 use App\Models\Range;
+use App\Models\Vulnerability;
 
 /**
  * Class NmapService
@@ -47,7 +48,7 @@ class NmapService
     
             $hosts = [];
             foreach ($ips as $ip) {
-                $command = "nmap -sn {$ip}"; // Scan each IP individually
+                $command = "nmap -Pn -sn {$ip}"; // Scan each IP individually
                 $output = $this->runCommand($command);
     
                 if ($output === "Command timed out.") {
@@ -92,7 +93,7 @@ class NmapService
             ? "{$this->range->ip}/{$this->range->cidr}"
             : $this->range->ip;
     
-        $command = "nmap -sn {$target}";
+        $command = "nmap -Pn -sn {$target}";
         
         // Use the runCommand function with timeout set to 60 seconds
         $output = $this->runCommand($command);
@@ -137,7 +138,7 @@ class NmapService
      */
     public function scanServices(Host $host): bool|string
     {
-        $command = "nmap -sS -sV -O -T3 {$host->ip}";
+        $command = "nmap -Pn -sS -sV -O -T3 {$host->ip}";
         info("Running Command: $command");
     
         $output = $this->runCommand($command);
@@ -220,5 +221,17 @@ class NmapService
         }
     
         return $services;
+    }
+
+
+
+
+
+    public static function scan2(Host $host): void
+    {
+        $result_path = tmp()->path($host->id) .'.xml';
+        $command = "nmap -Pn -sS -sV -O -T3 -oX $result_path {$host->ip}";
+        $output = shell_exec($command);
+        dd($output);
     }
 }

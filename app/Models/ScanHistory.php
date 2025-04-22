@@ -19,4 +19,9 @@ class ScanHistory extends Model
     {
         return $this->belongsTo(Host::class);
     }
+    public function vulnerabilities()
+    {
+        return $this->hasMany(Vulnerability::class);
+    }
+
 }

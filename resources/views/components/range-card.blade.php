@@ -1,6 +1,6 @@
 @props(['range'])
 
-<div class="bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition">
+<div {{ $attributes->merge(['class' => 'bg-gray-50 border border-gray-200 rounded-2xl p-6 flex flex-col justify-between shadow-sm hover:shadow-md transition']) }}>
     <div>
         <h2 class="text-lg font-semibold text-gray-800">{{ $range->name }}</h2>
         
@@ -24,5 +24,9 @@
         <a  wire:navigate href="{{ route('ranges.edit', $range) }}" class="cursor-pointer">
             <flux:icon.pencil-square/>
         </a>
+
+    <button class="cursor-pointer" wire:click="deleteRange({{ $range->id }})">
+        <flux:icon.trash/>
+    </button>
     </div>
 </div>
