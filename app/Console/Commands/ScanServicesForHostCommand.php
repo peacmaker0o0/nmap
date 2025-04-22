@@ -13,44 +13,46 @@ class ScanServicesForHostCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'scan:services {host_id}';
+    protected $signature = 'scan:services {host_id?}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Scan services for a given host or all hosts if no host_id is provided';
 
     /**
      * Execute the console command.
      */
     public function handle()
-
     {
         $host_id = $this->argument('host_id');
-        
-        $host = Host::where('id', $host_id)->first();
 
+        if ($host_id) {
+            $hosts = Host::where('id', $host_id)->get();
+        } else {
+            $this->info('No host_id provided. Scanning all hosts...');
+            $hosts = Host::all();
+        }
 
-        if (!$host) {
-            $this->error('Host not found');
+        if ($hosts->isEmpty()) {
+            $this->error('No host(s) found.');
             return;
         }
 
-        $range = $host->range;
-        info("Scanning host {$host->ip}");
-        $nmap = new NmapService($range);
-        if($nmap->scan2($host))
-        {
-            $this->info('Services scanned');
-        }
-        else
-        {
-            $this->info('Host seems down');
-        }
+        foreach ($hosts as $host) {
+            $range = $host->range;
+            info("Scanning host {$host->ip}");
+            $this->info("Scanning host {$host->ip}");
 
+            $nmap = new NmapService($range);
 
-        
+            if ($nmap->scan2($host)) {
+                $this->info("Services scanned for host {$host->ip}");
+            } else {
+                $this->warn("Host {$host->ip} seems down");
+            }
+        }
     }
 }
