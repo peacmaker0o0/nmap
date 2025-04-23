@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Hosts;
 
+use App\Jobs\ScanServicesJob;
 use App\Models\Host;
 use App\Models\Service;
 use Illuminate\Support\Facades\Artisan;
@@ -34,20 +35,10 @@ class Show extends Component
     // Scan services for the host
     public function scanServices()
     {
-        $output = Artisan::call('scan:services', [
-            'host_id' => $this->host->id
-        ]);
-    
-        $outputString = Artisan::output();
-
-        info($output);
-    
-        // Simulate a successful scan for now
-        $this->scanSuccess = true;
-        $this->scanFail = false;
-        $this->services = Service::where('host_id', $this->host->id)->get();
-        $this->dispatch('services-scanned');
-        $this->refreshScanHistoryCollapse();
+       ScanServicesJob::dispatch($this->host);
+       session()->flash('message','Scanning services is running in background');
+       $this->dispatch('scan-started');
+      
     }
 
 
@@ -57,7 +48,7 @@ class Show extends Component
         $this->scanHistoryCollapse = $this->host->scanHistory->pluck('id', 'id')->mapWithKeys(fn($id) => [$id => false])->toArray();
     }
 
-    #[On('services-scanned')]
+    #[On('scan-started')]
     public function render()
     {
         // Refresh the list of services after scanning

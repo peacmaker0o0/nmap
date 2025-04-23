@@ -33,6 +33,15 @@
                 ❌ Scan failed or host seems down. Try using -Pn if it’s blocking pings.
             </div>
         @endif
+
+
+        @if (session('message'))
+        <flux:callout 
+            variant="secondary" 
+            icon="information-circle" 
+            heading="{{ session('message') }}" 
+        />
+    @endif
     </div>
 
     <!-- Scan History Tables -->
