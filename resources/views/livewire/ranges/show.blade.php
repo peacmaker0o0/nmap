@@ -16,7 +16,7 @@
     @endif
 
     <div class="text-center">
-        <flux:button wire:click="scanHosts" variant="primary">
+        <flux:button class="cursor-pointer" wire:click="scanHosts" variant="primary">
             Scan Hosts
         </flux:button>
     </div>

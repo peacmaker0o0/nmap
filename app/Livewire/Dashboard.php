@@ -21,33 +21,44 @@ class Dashboard extends Component
 
     public $monitorResults;
 
+    public $uptimeStats;
+
     public function mount()
     {
         // Existing stats
         $this->totalHosts = Host::count();
         $this->totalRanges = Range::count();
         $this->totalServices = Service::count();
-    
+        
         $this->hostsPerRange = Range::select('id', 'name')
             ->withCount('hosts')
             ->get();
-    
+        
         $this->topPorts = Service::select('port', DB::raw('count(*) as count'))
             ->groupBy('port')
             ->orderByDesc('count')
             ->limit(10)
             ->get();
-    
+        
         $this->topServices = Service::select('name', DB::raw('count(*) as count'))
             ->groupBy('name')
             ->orderByDesc('count')
             ->limit(10)
             ->get();
-    
-        // 👇 Monitor results
+        
+        // Monitor results
         $this->monitorResults = Host::with('services')->get()->mapWithKeys(function ($host) {
             return [$host->ip => $host->monitor()];
         });
+        
+        // Uptime stats for top 5 hosts with most scans
+        $this->uptimeStats = Host::withCount('scanHistories')
+            ->orderByDesc('scan_histories_count')
+            ->limit(5)
+            ->get()
+            ->mapWithKeys(function ($host) {
+                return [$host->ip => $host->uptime()];
+            });
     }
 
 
