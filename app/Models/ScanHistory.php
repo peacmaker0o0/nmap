@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -28,6 +29,17 @@ class ScanHistory extends Model
     }
 
 
+
+
+    public function scopeUp(Builder $query): Builder
+    {
+        return $query->where("up",true);
+    }
+
+    public function scopeDown(Builder $query): Builder
+    {
+        return $query->where("up",false);
+    }
 
 
 

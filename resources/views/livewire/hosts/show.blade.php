@@ -49,7 +49,7 @@
         <h2 class="text-2xl font-semibold text-gray-800 mb-4">Scan History</h2>
 
         <!-- Loop through scan history -->
-        @foreach ($host->scanHistory as $scan)
+        @foreach ($host->scanHistories as $scan)
             <div class="mb-4">
                 <!-- Collapsible Button -->
                 <button class="w-full text-left px-4 py-2 bg-gray-100 rounded-md focus:outline-none" 

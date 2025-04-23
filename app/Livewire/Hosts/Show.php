@@ -24,7 +24,7 @@ class Show extends Component
     {
         $this->host = $host;
         // Initialize the collapse state for each scan history (set to false by default)
-        $this->scanHistoryCollapse = $this->host->scanHistory->pluck('id', 'id')->mapWithKeys(fn($id) => [$id => false])->toArray();
+        $this->scanHistoryCollapse = $this->host->scanHistories->pluck('id', 'id')->mapWithKeys(fn($id) => [$id => false])->toArray();
     }
     // Toggle the collapse state for a specific scan history
     public function toggleScanHistory($scanId)

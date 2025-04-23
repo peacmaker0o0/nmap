@@ -16,6 +16,7 @@ return new class extends Migration
         Schema::create('scan_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Host::class);
+            $table->boolean('up')->default(false);
             $table->timestamps();
         });
 

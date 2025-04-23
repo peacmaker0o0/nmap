@@ -152,7 +152,7 @@ class NmapService
     
         $services = $this->parseNmapOutputForServices($output, $host);
         info("All services parsed");
-        $scan = $host->scanHistory()->create();
+        $scan = $host->scanHistories()->create();
     
         foreach ($services as $serviceData) {
             info("Updating or creating service", [
@@ -226,14 +226,27 @@ class NmapService
     }
 
 
-    public static function scan2(Host $host): void
+    public static function scan2(Host $host): bool
     {
+
+
+
+        //if host is down, create scan history 
+        if (!ping($host->ip)) {
+            $scan = $host->scanHistories()->create([
+                'up'=>false
+            ]);
+            return false;
+        }
+
+
         $resultPath = tmp()->path($host->id) . '.xml';
         $command = "nmap -Pn -sS -sV -O -T3 -oX $resultPath {$host->ip}";
         shell_exec($command);
     
         // Now parse the XML
         self::parseXmlResult($resultPath, $host);
+        return true;
     }
 
 
@@ -251,7 +264,9 @@ class NmapService
         throw new \Exception("Failed to parse Nmap XML output.");
     }
 
-    $scan = $host->scanHistory()->create();
+    $scan = $host->scanHistories()->create([
+        'up'=>true
+    ]);
 
 
 
