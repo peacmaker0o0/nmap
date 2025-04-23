@@ -77,6 +77,7 @@ public function uptime(): array
 
     if ($scanHistories->isEmpty()) {
         return [
+            
             'total_scans' => 0,
             'uptime_percentage' => 0,
             'downtime_percentage' => 0,
@@ -141,6 +142,7 @@ public function uptime(): array
     $totalTime = $totalUptime + $totalDowntime;
 
     return [
+        'domain'=>$this->domain,
         'total_scans' => $scanHistories->count(),
         'uptime_percentage' => $totalTime > 0 ? round(($totalUptime / $totalTime) * 100, 2) : 0,
         'downtime_percentage' => $totalTime > 0 ? round(($totalDowntime / $totalTime) * 100, 2) : 0,

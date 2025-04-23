@@ -53,6 +53,7 @@ class Dashboard extends Component
         
         // Uptime stats for top 5 hosts with most scans
         $this->uptimeStats = Host::withCount('scanHistories')
+            ->whereHas('scanHistories')
             ->orderByDesc('scan_histories_count')
             ->limit(5)
             ->get()
