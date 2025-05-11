@@ -2,6 +2,7 @@
 
 use App\Models\Host;
 use App\Models\ScanHistory;
+use App\Models\VulnScanHistory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;

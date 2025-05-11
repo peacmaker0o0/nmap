@@ -2,6 +2,7 @@
 
 use App\Models\Host;
 use App\Models\ScanHistory;
+use App\Models\VulnScanHistory;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,16 +14,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('scan_histories', function (Blueprint $table) {
+        Schema::create('vuln_scan_histories', function (Blueprint $table) {
             $table->id();
             $table->foreignIdFor(Host::class);
-            $table->boolean('up')->default(false);
             $table->timestamps();
         });
 
 
-        Schema::table('services', function (Blueprint $table) {
-            $table->foreignIdFor(ScanHistory::class);
+
+        Schema::table('vulnerabilities', function (Blueprint $table) {
+            $table->foreignIdFor(VulnScanHistory::class);
         });
     }
 
@@ -31,12 +32,11 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('scan_history');
+        Schema::dropIfExists('vuln_scan_histories');
 
-        Schema::table('services', function (Blueprint $table) {
-            $table->dropForeignIdFor(ScanHistory::class);
+
+        Schema::table('vulnerabilities', function (Blueprint $table) {
+            $table->dropForeignIdFor(VulnScanHistory::class);
         });
-
-
     }
 };

@@ -253,6 +253,8 @@ class NmapService
 
 
 
+
+
     public static function parseXmlResult(string $filePath, Host $host): void
 {
     if (!file_exists($filePath)) {
@@ -317,6 +319,20 @@ class NmapService
 
     event(new ScanHistoryCreated($scan));
 }
+
+
+
+
+public static function vulnScan(Host $host): string
+{
+
+    
+    $command = "nmap -p- -T4 -sV --script vuln -oX {$host->vuln_path}";
+
+    dd($command);
+    return $this->runCommand($command);
+}
+
 
 
 }

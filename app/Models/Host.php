@@ -26,6 +26,13 @@ class Host extends Model
     }
 
 
+
+    public function vulnScanHistories(): HasMany
+    {
+        return $this->hasMany(VulnScanHistory::class);
+    }
+
+
     public function monitor($latestScanServices = [])
     {
         // 1. Get current DB services keyed by name:port
@@ -162,6 +169,16 @@ public function uptime(): array
     public function lastScan(): ScanHistory
     {
         return $this->scanHistory()->orderBy('created_at','desc')->first();
+    }
+
+
+
+
+
+
+    public function getVulnPathAttribute()
+    {
+        return tmp()->path("vuln_{$this->id}.xml");
     }
 
 
