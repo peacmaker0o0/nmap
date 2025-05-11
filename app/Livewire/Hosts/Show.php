@@ -3,6 +3,7 @@
 namespace App\Livewire\Hosts;
 
 use App\Jobs\ScanServicesJob;
+use App\Jobs\ScanVulnJob;
 use App\Models\Host;
 use App\Models\Service;
 use Illuminate\Support\Facades\Artisan;
@@ -39,6 +40,17 @@ class Show extends Component
        session()->flash('message','Scanning services is running in background');
        $this->dispatch('scan-started');
       
+    }
+
+
+
+    public function scanVulnerabilities()
+    {
+        
+      //vuln
+      ScanVulnJob::dispatch($this->host);
+      session()->flash('message','Scanning Vulnerabilities is running in background');
+      $this->dispatch('scan-started');
     }
 
 

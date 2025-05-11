@@ -29,8 +29,12 @@ class NmapService
     {
         $output = [];
         $returnVar = 0;
+
+
+        info("running the command $command");
     
         exec($command . ' 2>&1', $output, $returnVar);
+        
     
         return implode("\n", $output);
     }
@@ -324,24 +328,30 @@ class NmapService
 
 
 
-public function vulnScan(Host $host): string
+public function vulnScan(Host $host)
 {
 
     
-    $command = "nmap -p- -T4 -sV --script vuln -oX '{$host->vuln_path}' {$host->ip}";
-    return $this->runCommand($command);
+    $command = "nmap -p- -T4 -sV --script vuln -oX {$host->vuln_path} {$host->ip}";
+    info("***** scanning the exec");
+    shell_exec($command);
+    info("The command is $command");
+    info("Finished scanning");
 }
 
 
-public static function processVuln(Host $host)
+public function processVuln(Host $host)
 {
+
     $filePath = $host->vuln_path;
+    info("The file is in $filePath");
 
     if (!file_exists($filePath)) {
         throw new \Exception("Nmap XML output not found at: $filePath");
     }
 
     $xml = simplexml_load_file($filePath);
+    info($xml);
     if (!$xml) {
         throw new \Exception("Failed to parse Nmap XML output.");
     }
@@ -389,7 +399,6 @@ public static function processVuln(Host $host)
 
             // Save to the vulnerabilities table
             Vulnerability::create([
-                'scan_history_id' => 1, // or provide if you also link to scan history
                 'vuln_scan_history_id' => $vulnScan->id,
                 'port' => $portNumber,
                 'protocol' => $protocol,
@@ -397,6 +406,8 @@ public static function processVuln(Host $host)
             ]);
         }
     }
+
+    return true;
 }
 
 

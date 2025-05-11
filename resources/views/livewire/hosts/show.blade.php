@@ -17,6 +17,9 @@
             <flux:button wire:click="scanServices" wire:loading.attr="disabled" variant="primary">
                 Scan Services
             </flux:button>
+            <flux:button wire:click="scanVulnerabilities" wire:loading.attr="disabled" variant="primary">
+                Scan Vulnerabilities
+            </flux:button>
             <span wire:loading wire:target="scanServices" class="ml-2 text-sm text-blue-500 dark:text-blue-300">
                 Scanning...
             </span>
