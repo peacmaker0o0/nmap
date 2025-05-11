@@ -16,7 +16,7 @@ return new class extends Migration
     {
         Schema::create('vulnerabilities', function (Blueprint $table) {
             $table->id();
-            $table->foreignIdFor(ScanHistory::class)->constrained()->cascadeOnDelete();
+            //$table->foreignIdFor(ScanHistory::class)->constrained()->cascadeOnDelete();
             $table->string('port');
             $table->string('protocol');
             $table->text('vulnerability');

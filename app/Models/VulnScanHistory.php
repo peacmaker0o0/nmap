@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class VulnScanHistory extends Model
 {
+
+    protected $guarded = [];
     public function vulnerabilities(): HasMany
     {
         return $this->hasMany(Vulnerability::class);

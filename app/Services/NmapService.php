@@ -7,6 +7,7 @@ use App\Models\ScanHistory;
 use App\Models\Service;
 use App\Models\Range;
 use App\Models\Vulnerability;
+use App\Models\VulnScanHistory;
 
 /**
  * Class NmapService
@@ -323,14 +324,79 @@ class NmapService
 
 
 
-public static function vulnScan(Host $host): string
+public function vulnScan(Host $host): string
 {
 
     
-    $command = "nmap -p- -T4 -sV --script vuln -oX {$host->vuln_path}";
-
-    dd($command);
+    $command = "nmap -p- -T4 -sV --script vuln -oX '{$host->vuln_path}' {$host->ip}";
     return $this->runCommand($command);
+}
+
+
+public static function processVuln(Host $host)
+{
+    $filePath = $host->vuln_path;
+
+    if (!file_exists($filePath)) {
+        throw new \Exception("Nmap XML output not found at: $filePath");
+    }
+
+    $xml = simplexml_load_file($filePath);
+    if (!$xml) {
+        throw new \Exception("Failed to parse Nmap XML output.");
+    }
+
+    // Create a new VulnScanHistory for this host
+    $vulnScan = VulnScanHistory::create([
+        'host_id' => $host->id,
+    ]);
+
+    foreach ($xml->host->ports->port as $port) {
+        $portNumber = (string) $port['portid'];
+        $protocol = (string) $port['protocol'];
+
+        // If there are no scripts under this port, skip
+        if (!isset($port->script)) continue;
+
+        foreach ($port->script as $script) {
+            $scriptId = (string) $script['id'];
+            $output = (string) $script['output'];
+
+            // Extract CVEs from <table> elements if available
+            $cveIds = [];
+            $cvssScores = [];
+            $referenceUrls = [];
+
+            foreach ($script->table as $table) {
+                foreach ($table->elem as $elem) {
+                    $key = (string) $elem['key'];
+                    $value = (string) $elem;
+
+                    if (strtolower($key) === 'cve') {
+                        $cveIds[] = $value;
+                    } elseif (strtolower($key) === 'cvss') {
+                        $cvssScores[] = $value;
+                    } elseif (strtolower($key) === 'href') {
+                        $referenceUrls[] = $value;
+                    }
+                }
+            }
+
+            // Create a single string for each field (you can normalize this more if needed)
+            $cveList = implode(', ', $cveIds);
+            $cvssList = implode(', ', $cvssScores);
+            $urlList = implode(', ', $referenceUrls);
+
+            // Save to the vulnerabilities table
+            Vulnerability::create([
+                'scan_history_id' => 1, // or provide if you also link to scan history
+                'vuln_scan_history_id' => $vulnScan->id,
+                'port' => $portNumber,
+                'protocol' => $protocol,
+                'vulnerability' => "Script: $scriptId\nOutput: $output\nCVEs: $cveList\nCVSS: $cvssList\nReferences: $urlList"
+            ]);
+        }
+    }
 }
 
 
