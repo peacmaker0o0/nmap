@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Services\HostService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +33,11 @@ class Host extends Model
         return $this->hasMany(VulnScanHistory::class);
     }
 
+    public function uptimes(): HasMany
+    {
+        return $this->hasMany(Uptime::class);
+    }
+
 
     public function monitor($latestScanServices = [])
     {
@@ -47,17 +53,20 @@ class Host extends Model
     
         // 3. Merge both, marking status appropriately
         $allKeys = $existingServices->keys()->merge($latestCollection->keys())->unique();
+
     
         return $allKeys->map(function ($key) use ($existingServices, $latestCollection) {
             if ($latestCollection->has($key)) {
                 $service = $latestCollection[$key];
+                
                 return [
                     'name' => $service['name'],
                     'port' => $service['port'],
                     'protocol' => $service['protocol'],
-                    'status' => $service['status'] ?? 'up',
-                    'is_up' => $service['status'] === 'up',
+                    'status' => $service['status'] ?? 'down',
+                    'is_up' => $service['status'] === 'down',
                     'last_checked' => now()->diffForHumans(), // or actual timestamp if provided
+                    
                 ];
             } else {
                 $service = $existingServices[$key];
@@ -66,7 +75,7 @@ class Host extends Model
                     'port' => $service->port,
                     'protocol' => $service->protocol,
                     'status' => 'down',
-                    'is_up' => false,
+                    'is_up' => $service['status'] === 'up',
                     'last_checked' => now()->diffForHumans(), // or use $service->updated_at
                 ];
             }
@@ -80,7 +89,7 @@ class Host extends Model
 
 public function uptime(): array
 {
-    $scanHistories = $this->scanHistories()->orderBy('created_at')->get();
+    $scanHistories = $this->uptimes()->orderBy('created_at')->get();
 
     if ($scanHistories->isEmpty()) {
         return [
@@ -168,7 +177,18 @@ public function uptime(): array
 
     public function lastScan(): ScanHistory
     {
-        return $this->scanHistory()->orderBy('created_at','desc')->first();
+        return $this->scanHistories()->orderBy('created_at','desc')->first();
+    }
+
+    public function lastUpScan(): ScanHistory
+    {
+        return $this->scanHistories()->where('up', true)->orderBy('created_at','desc')->first();
+    }
+
+    public function checkUpTime(): bool
+    {
+        $service = new HostService($this);
+        return $service->checkUpTime();
     }
 
 
@@ -179,6 +199,13 @@ public function uptime(): array
     public function getVulnPathAttribute()
     {
         return tmp()->path("vuln_{$this->id}.xml");
+    }
+
+
+
+    public function anyServiceDown(): bool
+    {
+     return $this->lastUpScan()->services()->down()->exists();   
     }
 
 

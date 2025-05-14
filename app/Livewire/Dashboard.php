@@ -48,8 +48,13 @@ class Dashboard extends Component
         
         // Monitor results
         $this->monitorResults = Host::with('services')->get()->mapWithKeys(function ($host) {
-            return [$host->ip => $host->monitor()];
+            return [
+                $host->ip => $host->monitor(),
+        ];
         });
+
+        //dd($this->monitorResults);
+
         
         // Uptime stats for top 5 hosts with most scans
         $this->uptimeStats = Host::withCount('scanHistories')

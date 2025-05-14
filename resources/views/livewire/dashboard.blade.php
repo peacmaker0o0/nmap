@@ -48,37 +48,49 @@
     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Service Monitoring</h3>
         
-        <div class="space-y-4">
-            @foreach($monitorResults as $ip => $result)
-                <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-                    <h4 class="text-md font-medium text-blue-500">{{ $ip }}</h4>
+<div class="space-y-4">
+    @foreach($monitorResults as $ip => $result)
+        <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
+            <h4 class="text-md font-medium text-blue-500">{{ $ip }}</h4>
 
-                    @if(!empty($result['down']))
-                        <div class="mt-2">
-                            <p class="text-sm font-medium text-red-500">Services Down:</p>
-                            <ul class="list-disc list-inside text-xs text-red-400 space-y-1 mt-1">
-                                @foreach($result['down'] as $service)
-                                    <li>{{ $service->name }} ({{ $service->port }}/{{ $service->protocol }})</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @else
-                        <p class="text-sm text-green-500 mt-1">No services down 🎉</p>
-                    @endif
+            @php
+                $services = collect($result);
+                $down = $services->where('is_up', false);
+                $up = $services->where('is_up', true);
 
-                    @if(!empty($result['still_up']))
-                        <div class="mt-2">
-                            <p class="text-sm font-medium text-green-500">Services Still Up:</p>
-                            <ul class="list-disc list-inside text-xs text-green-400 space-y-1 mt-1">
-                                @foreach($result['still_up'] as $service)
-                                    <li>{{ $service->name }} ({{ $service->port }}/{{ $service->protocol }})</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    @endif
+
+           
+
+            
+            @endphp
+
+            @if($down->isNotEmpty())
+                <div class="mt-2">
+                    <p class="text-sm font-medium text-red-500">Services Down:</p>
+                    <ul class="list-disc list-inside text-xs text-red-400 space-y-1 mt-1">
+                        @foreach($down as $service)
+                            <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
+                        @endforeach
+                    </ul>
                 </div>
-            @endforeach
+            @else
+                <p class="text-sm text-green-500 mt-1">No services down 🎉</p>
+            @endif
+
+            @if($up->isNotEmpty())
+                <div class="mt-2">
+                    <p class="text-sm font-medium text-green-500">Services Still Up:</p>
+                    <ul class="list-disc list-inside text-xs text-green-400 space-y-1 mt-1">
+                        @foreach($up as $service)
+                            <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
         </div>
+    @endforeach
+</div>
+
     </div>
 
     <!-- Uptime Statistics - Improved layout -->
