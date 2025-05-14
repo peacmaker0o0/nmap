@@ -15,89 +15,43 @@
             <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-2">Total Services</h4>
             <p class="text-3xl font-bold text-yellow-500">{{ $totalServices }}</p>
         </div>
-    </div>
 
-    <!-- First Row of Charts - Side by Side on larger screens -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Hosts Per Range - Changed to donut for better space usage -->
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Hosts Per Range</h3>
-            <div class="relative" style="height: 300px">
-                <canvas id="hostsPerRangeChart"></canvas>
-            </div>
-        </div>
 
-        <!-- Top Ports - Made more compact -->
-        <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
-            <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Top Ports</h3>
-            <div class="relative" style="height: 300px">
-                <canvas id="topPortsChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Top Services - Full width but with controlled height -->
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Top Services</h3>
-        <div class="relative" style="height: 350px">
-            <canvas id="topServicesChart"></canvas>
-        </div>
-    </div>
-
-    <!-- Service Monitoring - Improved spacing -->
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Service Monitoring</h3>
         
-<div class="space-y-4">
-    @foreach($monitorResults as $ip => $result)
-        <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
-            <h4 class="text-md font-medium text-blue-500">{{ $ip }}</h4>
-
-            @php
-                $services = collect($result);
-                $down = $services->where('is_up', false);
-                $up = $services->where('is_up', true);
-            @endphp
-
-            @if($down->isNotEmpty())
-                <div class="mt-2">
-                    <p class="text-sm font-medium text-red-500">Services Down:</p>
-                    <ul class="list-disc list-inside text-xs text-red-400 space-y-1 mt-1">
-                        @foreach($down as $service)
-                            <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @else
-                <p class="text-sm text-green-500 mt-1">No services down 🎉</p>
-            @endif
-
-            @if($up->isNotEmpty())
-                <div class="mt-2">
-                    <p class="text-sm font-medium text-green-500">Services Still Up:</p>
-                    <ul class="list-disc list-inside text-xs text-green-400 space-y-1 mt-1">
-                        @foreach($up as $service)
-                            <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
-                        @endforeach
-                    </ul>
-                </div>
-            @endif
-        </div>
-    @endforeach
-</div>
-
     </div>
 
-    <!-- Uptime Statistics - Improved layout -->
+  <!-- First Row of Charts - Side by Side on larger screens -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Hosts Per Range - Set a fixed height for a shorter chart -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Hosts Per Range</h3>
+        <div class="relative" style="height: 250px"> <!-- Reduced height for Hosts Per Range -->
+            <canvas id="hostsPerRangeChart"></canvas>
+        </div>
+    </div>
+
+
+
+    <!-- Host Uptime Statistics - Set max height and overflow handling -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
         <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Host Uptime Statistics</h3>
-        
-        <div class="space-y-6">
+
+
+            <!-- Average Uptime - Compact card -->
+    <div class="mb-5 bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
+        <p class="text-3xl font-bold text-purple-500">
+            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
+        </p>
+    </div>
+
+
+        <div class="space-y-6 overflow-y-auto" style="max-height: 450px;"> <!-- Set max-height and overflow -->
             @foreach($uptimeStats as $ip => $stats)
                 <div class="border-t border-gray-200 dark:border-gray-700 pt-4">
                     <h4 class="text-md font-medium text-blue-500 mb-2">{{ $stats['domain'] ?? "" }}</h4>
                     <h4 class="text-sm text-gray-500 mb-2">{{ $ip }}</h4>
-                    
+
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                         <!-- Uptime/Downtime Cards - More compact -->
                         <div class="bg-green-50 dark:bg-green-900/50 p-3 rounded-lg">
@@ -109,7 +63,7 @@
                                 {{ gmdate('H\h i\m s\s', $stats['total_uptime_seconds']) }}
                             </p>
                         </div>
-                        
+
                         <div class="bg-red-50 dark:bg-red-900/50 p-3 rounded-lg">
                             <p class="text-xs font-medium text-red-700 dark:text-red-300">Downtime</p>
                             <p class="text-xl font-bold text-red-600 dark:text-red-300">
@@ -120,7 +74,7 @@
                             </p>
                         </div>
                     </div>
-                    
+
                     <!-- Timeline Visualization - Made slimmer -->
                     <div class="mb-3">
                         <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Uptime Timeline</h5>
@@ -135,7 +89,7 @@
                             @endforeach
                         </div>
                     </div>
-                    
+
                     <!-- Detailed Stats - More compact -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
                         <p><span class="font-medium">First scan:</span> {{ $stats['first_scan']->diffForHumans() }}</p>
@@ -147,21 +101,102 @@
             @endforeach
         </div>
     </div>
+</div>
 
 
-       <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
-        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
-        <p class="text-3xl font-bold text-purple-500">
-            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
-        </p>
+<!-- Second Row of Charts - 2 Column Grid -->
+<!-- Row of Charts - 2 columns on medium and larger screens -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Top Services Chart -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Top Services</h3>
+        <div class="relative" style="height: 350px">
+            <canvas id="topServicesChart"></canvas>
+        </div>
     </div>
 
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
-        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
-        <p class="text-3xl font-bold text-purple-500">
-            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
-        </p>
+    <!-- Top Ports Chart -->
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
+        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Top Ports</h3>
+        <div class="relative" style="height: 250px">
+            <canvas id="topPortsChart"></canvas>
+        </div>
     </div>
+</div>
+
+
+
+<!-- Service Monitoring - Collapsible -->
+<div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
+    <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-3">Service Monitoring</h3>
+
+    <div x-data="{ openHosts: {} }" class="space-y-4">
+        @foreach($monitorResults as $ip => $result)
+            <div class="border-t border-gray-200 dark:border-gray-700 pt-3">
+                <!-- Host Toggle Button -->
+                <button 
+                    @click="openHosts['{{ $ip }}'] = !openHosts['{{ $ip }}']"
+                    class="flex justify-between items-center w-full text-left font-medium text-gray-700 dark:text-gray-300 hover:text-blue-500 dark:hover:text-blue-400 focus:outline-none"
+                >
+                    <span>{{ $ip }}</span>
+                    <svg 
+                        class="w-5 h-5 transition-transform transform" 
+                        :class="{ 'rotate-180': openHosts['{{ $ip }}'] }" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Collapsible Content -->
+                <div 
+                    x-show="openHosts['{{ $ip }}']" 
+                    x-collapse 
+                    style="display: none;"
+                    class="mt-3 pl-4 border-l-2 border-gray-200 dark:border-gray-600"
+                >
+                    @php
+                        $services = collect($result);
+                        $down = $services->where('is_up', false);
+                        $up = $services->where('is_up', true);
+                    @endphp
+
+                    @if($down->isNotEmpty())
+                        <div>
+                            <p class="text-sm font-medium text-red-500">Services Down:</p>
+                            <ul class="list-disc list-inside text-xs text-red-400 space-y-1 mt-1">
+                                @foreach($down as $service)
+                                    <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @else
+                        <p class="text-sm text-green-500 mt-1">No services down 🎉</p>
+                    @endif
+
+                    @if($up->isNotEmpty())
+                        <div class="mt-2">
+                            <p class="text-sm font-medium text-green-500">Services Still Up:</p>
+                            <ul class="list-disc list-inside text-xs text-green-400 space-y-1 mt-1">
+                                @foreach($up as $service)
+                                    <li>{{ $service['name'] }} ({{ $service['port'] }}/{{ $service['protocol'] }})</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        @endforeach
+    </div>
+</div>
+
+    <!-- Uptime Statistics - Improved layout -->
+   
+
+
+
 @if($hostVulnerabilities && $hostVulnerabilities->isNotEmpty())
     @foreach($hostVulnerabilities as $index => $hostVuln)
         @if(isset($hostVuln['host']) && isset($hostVuln['vulns']))
@@ -255,21 +290,9 @@
 @endif
 
 
-    <!-- Uptime Comparison Chart - Full width but controlled height -->
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
-        <h3 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">Host Uptime Comparison</h3>
-        <div class="relative" style="height: 350px">
-            <canvas id="uptimeComparisonChart"></canvas>
-        </div>
-    </div>
 
-    <!-- Average Uptime - Compact card -->
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
-        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
-        <p class="text-3xl font-bold text-purple-500">
-            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
-        </p>
-    </div>
+
+
 </div>
 
 <script>
