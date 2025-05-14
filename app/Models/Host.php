@@ -185,6 +185,12 @@ public function uptime(): array
         return $this->scanHistories()->where('up', true)->orderBy('created_at','desc')->first();
     }
 
+
+    public function lastVulnScan(): VulnScanHistory
+    {
+        return $this->vulnScanHistories()->orderBy('created_at', 'desc')->first();
+    }
+
     public function checkUpTime(): bool
     {
         $service = new HostService($this);
@@ -200,6 +206,25 @@ public function uptime(): array
     {
         return tmp()->path("vuln_{$this->id}.xml");
     }
+
+
+
+public function vulnView()
+{
+    $vulns = $this->lastVulnScan()->vulnerabilities->map(function ($vuln) {
+        return collect($vuln)
+            ->except(['vulnerability']) // remove the 'vulnerability' relation
+            ->merge([
+                'parsed_vulnerabilities' => $vuln->parsed_vulnerabilities,
+            ]);
+    });
+
+    return [
+        'host' => $this,
+        'vulns' => $vulns,
+    ];
+}
+
 
 
 
