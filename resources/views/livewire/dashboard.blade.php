@@ -57,11 +57,6 @@
                 $services = collect($result);
                 $down = $services->where('is_up', false);
                 $up = $services->where('is_up', true);
-
-
-           
-
-            
             @endphp
 
             @if($down->isNotEmpty())
@@ -152,6 +147,113 @@
             @endforeach
         </div>
     </div>
+
+
+       <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
+        <p class="text-3xl font-bold text-purple-500">
+            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
+        </p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
+        <h4 class="text-lg font-medium text-gray-800 dark:text-white mb-1">Avg. Uptime</h4>
+        <p class="text-3xl font-bold text-purple-500">
+            {{ number_format(collect($uptimeStats->pluck('uptime_percentage'))->avg(), 2) }}%
+        </p>
+    </div>
+@if($hostVulnerabilities && $hostVulnerabilities->isNotEmpty())
+    @foreach($hostVulnerabilities as $index => $hostVuln)
+        @if(isset($hostVuln['host']) && isset($hostVuln['vulns']))
+            <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 mb-6">
+                <button 
+                    wire:key="toggle-btn-{{ $loop->index }}" 
+                    x-data 
+                    @click="$dispatch('toggle-host-vulns-{{ $loop->index }}')" 
+                    class="flex justify-between items-center w-full text-left font-semibold text-gray-800 dark:text-white"
+                >
+                    <span>Vulnerabilities for {{ $hostVuln['host']->domain }} <span class="text-gray-500 text-sm">({{ $hostVuln['host']->ip }})</span>  </span>
+                    <svg 
+                        class="w-5 h-5 transition-transform transform" 
+                        :class="{ 'rotate-180': openHost === {{ $loop->index }} }" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        viewBox="0 0 24 24" 
+                        xmlns="http://www.w3.org/2000/svg"
+                    >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                    </svg>
+                </button>
+
+                <!-- Use Alpine.js to control visibility -->
+                <div 
+                    x-data="{ open: false }" 
+                    x-show="open" 
+                    x-transition 
+                    @toggle-host-vulns-{{ $loop->index }}.window="open = !open"
+                    style="display: none;" 
+                    class="mt-4"
+                >
+                    @if($hostVuln['vulns']->isNotEmpty())
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full table-auto text-sm text-left text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700">
+                                <thead class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
+                                    <tr>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Port</th>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Protocol</th>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Vulnerability ID</th>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Score</th>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Tag</th>
+                                        <th class="px-4 py-2 border border-gray-200 dark:border-gray-600">Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($hostVuln['vulns'] as $vulnItem)
+                                        @if(isset($vulnItem['parsed_vulnerabilities']) && is_array($vulnItem['parsed_vulnerabilities']) && !empty($vulnItem['parsed_vulnerabilities']))
+                                            @foreach($vulnItem['parsed_vulnerabilities'] as $vulnerability)
+                                                <tr class="border-t border-gray-200 dark:border-gray-700">
+                                                    <td class="px-4 py-2">{{ $vulnItem['port'] }}</td>
+                                                    <td class="px-4 py-2">{{ $vulnItem['protocol'] }}</td>
+                                                    <td class="px-4 py-2 font-medium">{{ $vulnerability['id'] ?? 'N/A' }}</td>
+                                                    <td class="px-4 py-2">{{ $vulnerability['score'] ?? 'N/A' }}</td>
+                                                    <td class="px-4 py-2">
+                                                        @if(isset($vulnerability['tag']))
+                                                            <span class="text-red-500 font-semibold">{{ $vulnerability['tag'] }}</span>
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        @if(isset($vulnerability['url']))
+                                                            <a href="{{ $vulnerability['url'] }}" target="_blank" class="text-blue-500 hover:underline">Details</a>
+                                                        @else
+                                                            N/A
+                                                        @endif
+                                                    </td>
+                                                </tr>
+                                            @endforeach
+                                        @else
+                                            <tr class="border-t border-gray-200 dark:border-gray-700">
+                                                <td class="px-4 py-2">{{ $vulnItem['port'] }}</td>
+                                                <td class="px-4 py-2">{{ $vulnItem['protocol'] }}</td>
+                                                <td class="px-4 py-2 text-gray-500 italic" colspan="4">No vulnerabilities found for this port.</td>
+                                            </tr>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <p class="text-gray-600 dark:text-gray-400 mt-2">No vulnerability scan data found for this host.</p>
+                    @endif
+                </div>
+            </div>
+        @endif
+    @endforeach
+@else
+    <p class="text-gray-600 dark:text-gray-400 mt-2">No hosts or vulnerabilities found.</p>
+@endif
+
 
     <!-- Uptime Comparison Chart - Full width but controlled height -->
     <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300">
