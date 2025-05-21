@@ -186,7 +186,7 @@ public function uptime(): array
     }
 
 
-    public function lastVulnScan(): VulnScanHistory
+    public function lastVulnScan(): VulnScanHistory|null
     {
         return $this->vulnScanHistories()->orderBy('created_at', 'desc')->first();
     }
@@ -211,11 +211,20 @@ public function uptime(): array
 
 public function vulnView()
 {
-    $vulns = $this->lastVulnScan()->vulnerabilities->map(function ($vuln) {
+    $lastScan = $this->lastVulnScan();
+
+    if (!$lastScan || !$lastScan->vulnerabilities) {
+        return [
+            'host' => $this,
+            'vulns' => collect(), // return empty collection if null
+        ];
+    }
+
+    $vulns = $lastScan->vulnerabilities->map(function ($vuln) {
         return collect($vuln)
             ->except(['vulnerability']) // remove the 'vulnerability' relation
             ->merge([
-                'parsed_vulnerabilities' => $vuln->parsed_vulnerabilities,
+                'parsed_vulnerabilities' => $vuln->parsed_vulnerabilities ?? null,
             ]);
     });
 
@@ -224,6 +233,7 @@ public function vulnView()
         'vulns' => $vulns,
     ];
 }
+
 
 
 

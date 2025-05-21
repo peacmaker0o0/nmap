@@ -1,4 +1,13 @@
+
+
 <div class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto space-y-6">
+    <div class="bg-white dark:bg-gray-900 shadow mb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white text-center">
+            Al Ahlia Monitoring System
+        </h1>
+    </div>
+</div>
     <!-- Summary Cards - Made more compact -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-white dark:bg-gray-800 p-4 rounded-lg shadow hover:shadow-md transition-all duration-300 text-center">
@@ -91,12 +100,25 @@
                     </div>
 
                     <!-- Detailed Stats - More compact -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
-                        <p><span class="font-medium">First scan:</span> {{ $stats['first_scan']->diffForHumans() }}</p>
-                        <p><span class="font-medium">Last scan:</span> {{ $stats['last_scan']->diffForHumans() }}</p>
-                        <p><span class="font-medium">Total period:</span> {{ gmdate('H\h i\m', $stats['total_time_seconds']) }}</p>
-                        <p><span class="font-medium">Total scans:</span> {{ $stats['total_scans'] }}</p>
-                    </div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600 dark:text-gray-400">
+    <p>
+        <span class="font-medium">First scan:</span>
+        {{ $stats['first_scan'] ? $stats['first_scan']->diffForHumans() : 'N/A' }}
+    </p>
+    <p>
+        <span class="font-medium">Last scan:</span>
+        {{ $stats['last_scan'] ? $stats['last_scan']->diffForHumans() : 'N/A' }}
+    </p>
+    <p>
+        <span class="font-medium">Total period:</span>
+        {{ isset($stats['total_time_seconds']) ? gmdate('H\h i\m', $stats['total_time_seconds']) : 'N/A' }}
+    </p>
+    <p>
+        <span class="font-medium">Total scans:</span>
+        {{ $stats['total_scans'] ?? 'N/A' }}
+    </p>
+</div>
+
                 </div>
             @endforeach
         </div>
